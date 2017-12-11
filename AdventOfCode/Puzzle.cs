@@ -7,18 +7,16 @@ namespace AdventOfCode
         {
         }
 
-        public int Year => 2005;
-        public int Day => 1;
-        public string Text => "";
-        public string Input => Console.ReadLine();
+        public string Input { get; set; }
+
         public string Output()
         {
             return Output(Input);
         }
 
-        public string Output(string input)
+        public virtual string Output(string input)
         {
-            return "";
+            return string.Empty;
         }
     }
 }
