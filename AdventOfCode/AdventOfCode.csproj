@@ -4,8 +4,4 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.0</TargetFramework>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Folder Include="2005\" />
-  </ItemGroup>
 </Project>
