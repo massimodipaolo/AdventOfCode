@@ -1,9 +1,9 @@
 ﻿using System;
-namespace AdventOfCode.y2005
+namespace AdventOfCode._2005
 {
-    public class _1 : Puzzle
+    public class _01 : Puzzle
     {
-        public _1()
+        public _01()
         {
             ReadInputFromFile("2005/01.txt");
         }

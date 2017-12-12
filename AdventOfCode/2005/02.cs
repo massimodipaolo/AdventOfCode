@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace AdventOfCode.y2005
+namespace AdventOfCode._2005
 {
-    public class _2 : Puzzle
+    public class _02 : Puzzle
     {
-        public _2()
+        public _02()
         {
             ReadInputFromFile("2005/02.txt");
         }
