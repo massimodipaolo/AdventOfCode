@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace AdventOfCode._2005
+namespace AdventOfCode._2015
 {
     public class _02 : Puzzle
     {
         public _02()
         {
-            ReadInputFromFile("2005/02.txt");
+            ReadInputFromFile("2015/02.txt");
         }
 
         /*

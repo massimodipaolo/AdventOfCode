@@ -3,13 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 
-namespace AdventOfCode._2005
+namespace AdventOfCode._2015
 {
     public class _03 : Puzzle
     {
         public _03()
         {
-            ReadInputFromFile("2005/03.txt");
+            ReadInputFromFile("2015/03.txt");
         }
 
         /*
@@ -29,10 +29,10 @@ For example:
         public override string Output(string input)
         {
             int x = 0; int y = 0;
-            var houses = new Dictionary<string,bool>();
-            houses[$"{x}-{y}"] = true;            
+            var houses = new Dictionary<string, bool>();
+            houses[$"{x}-{y}"] = true;
             foreach (char move in input)
-            {                
+            {
                 switch (move)
                 {
                     case '^':
@@ -49,8 +49,8 @@ For example:
                         break;
                 }
                 houses[$"{x}-{y}"] = true;
-            }         
-            return houses.Count.ToString();            
+            }
+            return houses.Count.ToString();
         }
 
         /*
@@ -68,7 +68,7 @@ For example:
         ^v^v^v^v^v now delivers presents to 11 houses, with Santa going one direction and Robo-Santa going the other.
                      */
         public override string Output2(string input)
-        {   
+        {
             int x1 = 0; int y1 = 0;
             int x2 = 0; int y2 = 0;
             var houses = new Dictionary<string, bool>();
@@ -76,13 +76,13 @@ For example:
             var i = 0;
             foreach (char move in input)
             {
-                i++;                        
+                i++;
                 switch (move)
                 {
                     case '^':
                         if (i % 2 == 0) y1++; else y2++;
                         break;
-                    case '>':                        
+                    case '>':
                         if (i % 2 == 0) x1++; else x2++;
                         break;
                     case 'v':
