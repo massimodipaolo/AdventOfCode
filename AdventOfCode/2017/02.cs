@@ -30,7 +30,7 @@ What is the checksum for the spreadsheet in your puzzle input?
         public override string Output(string input)
         {
             var checksum = 0;
-            foreach(var row in input.Split('\r'))
+            foreach (var row in input.Split('\r'))
             {
                 var nums = row.Split(' ').AsEnumerable().Where(s => !string.IsNullOrEmpty(s)).Select(_ => int.Parse(_.ToString()));
                 checksum += nums.Max() - nums.Min();

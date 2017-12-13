@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 namespace AdventOfCode._2017
 {
     public class _01 : Puzzle
     {
         public _01()
         {
-            ReadInputFromFile("2017/01.txt");            
+            ReadInputFromFile("2017/01.txt");
         }
 
         /* --- Day 1: Inverse Captcha ---
