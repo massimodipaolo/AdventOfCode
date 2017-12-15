@@ -64,7 +64,7 @@ Before you're ready to help them, you need to make sure your information is corr
             {
                 var split = _.Split("(");
                 var node = split[0].Trim();
-                var children = split[1].Split("->")[1].Replace(" ","").Replace(",","|");
+                var children = split[1].Split("->")[1].Replace(" ", "").Replace(",", "|");
                 return new { node, children };
             }
             );
@@ -95,60 +95,58 @@ If this change were made, its weight would be 60.
 Given that exactly one program is the wrong weight, what would its weight need to be to balance the entire tower?         
              */
         public override string Output2(string input)
-        {   
+        {
             var rows = input.Split("\n");
             var towers = rows.Select(_ =>
             {
                 var separator = _.Split("->");
                 var left = separator[0].Trim().Split("(");
-                string right = separator.Length>1 ? separator[1] : null;
-                return new Tower() {
+                string right = separator.Length > 1 ? separator[1] : null;
+                return new Tower()
+                {
                     Name = left[0].Trim(),
                     Weight = int.Parse(left[1].Replace(")", "").Trim()),
                     Childrens = !string.IsNullOrEmpty(right) ? right.Split(",").Select(__ => __.Trim()) : null
-                };                
+                };
             }).ToArray();
 
             string rootName = Output(input);
 
             calcWeight(rootName, ref towers);
 
-            var tree = towers.Single(_ => _.Name == rootName)
-                .Childrens
-                .Select(node => towers.Single(_ => _.Name == node));
-            var heaviest = tree.OrderByDescending(_ => _.Weight + _.ChildrensWeight).First();
-            var diff = (heaviest.Weight + heaviest.ChildrensWeight) - tree.Min(_ => _.Weight + _.ChildrensWeight);
+            var firstTree = towers.Single(_ => _.Name == rootName).Childrens.Select(node => towers.Single(_ => _.Name == node));
+            var heaviest = firstTree.OrderByDescending(_ => _.TotalWeight).First();
+            var diff = heaviest.TotalWeight - firstTree.Min(_ => _.TotalWeight);
 
             while (true)
             {
                 if (heaviest.Childrens == null) break;
                 var _tmp = heaviest.Childrens.Select(node => towers.Single(_ => _.Name == node));
-                heaviest = _tmp.OrderByDescending(_ => _.Weight + _.ChildrensWeight).First();
-            }            
-            
+                if (_tmp.Max(_ => _.TotalWeight) == _tmp.Min(_ => _.TotalWeight)) break;
+                heaviest = _tmp.OrderByDescending(_ => _.TotalWeight).First();
+            }
+
             return (heaviest.Weight - diff).ToString();
         }
 
         private int calcWeight(string nodeName, ref Tower[] towers)
         {
             Tower tower = towers.Single(_ => _.Name == nodeName);
-            if (tower.Childrens != null)            
-                foreach (var node in tower.Childrens)               
-                    tower.ChildrensWeight += calcWeight(node, ref towers);                            
-            return tower.Weight + tower.ChildrensWeight;
+            if (tower.Childrens != null)
+                foreach (var node in tower.Childrens)
+                    tower.ChildrensWeight += calcWeight(node, ref towers);
+            return tower.TotalWeight;
         }
 
 
-    }    
+    }
 
     public class Tower
     {
         public string Name { get; set; }
-        public int Weight { get; set; }        
+        public int Weight { get; set; }
         public IEnumerable<string> Childrens { get; set; }
         public int ChildrensWeight { get; set; }
-
         public int TotalWeight => Weight + ChildrensWeight;
-
     }
 }
