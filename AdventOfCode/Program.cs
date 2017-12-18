@@ -25,7 +25,21 @@ namespace AdventOfCode
             //Console.WriteLine(new _2017._06().Output());
             //Console.WriteLine(new _2017._06().Output2());
             //Console.WriteLine(new _2017._07().Output());
-            Console.WriteLine(new _2017._07().Output2());
+            //Console.WriteLine(new _2017._07().Output2());
+            //Console.WriteLine(new _2017._08().Output());
+            //Console.WriteLine(new _2017._08().Output2());
+            //Console.WriteLine(new _2017._09().Output());
+            //Console.WriteLine(new _2017._09().Output2());
+            //Console.WriteLine(new _2017._10().Output());
+            //Console.WriteLine(new _2017._10().Output2());
+            //Console.WriteLine(new _2017._11().Output()); // refine
+            //Console.WriteLine(new _2017._11().Output2());
+            //Console.WriteLine(new _2017._12().Output());
+            //Console.WriteLine(new _2017._12().Output2());
+            //Console.WriteLine(new _2017._13().Output());
+            //Console.WriteLine(new _2017._13().Output2());
+            //Console.WriteLine(new _2017._14().Output());
+            Console.WriteLine(new _2017._14().Output2());
             Console.ReadLine();
         }
     }
