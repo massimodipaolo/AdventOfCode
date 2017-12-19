@@ -9,7 +9,8 @@ namespace AdventOfCode._2017
 {
     class _18 : Puzzle
     {
-        public _18() {
+        public _18()
+        {
             ReadInputFromFile("2017/18.txt");
         }
 
@@ -70,7 +71,7 @@ jgz a -2";
             */
             var rows = input.Split("\n");
 
-            var instructions = new List<string>(rows.Length);
+            instructions = new List<string>(rows.Length);
             instructions.AddRange(rows);
             int position = 0;
             var registers = new Dictionary<string, long>();
@@ -80,8 +81,8 @@ jgz a -2";
             while (position <= instructions.Capacity)
             {
                 var cmd = instructions[position].Split(" ");
-                
-                if (!registers.ContainsKey(cmd[1]))                
+
+                if (!registers.ContainsKey(cmd[1]))
                     registers.Add(cmd[1], 0);
 
                 long value = 0;
@@ -94,7 +95,7 @@ jgz a -2";
 
                 switch (cmd[0])
                 {
-                    case "snd":                        
+                    case "snd":
                         if (!lasts.ContainsKey(cmd[1]))
                             lasts.Add(cmd[1], 0);
                         lasts[cmd[1]] = registers[cmd[1]];
@@ -122,12 +123,12 @@ jgz a -2";
                     case "jgz":
                         if (registers[cmd[1]] > 0)
                             position += (int)value - 1;
-                        break;                    
+                        break;
                 }
 
                 position++;
             }
-            
+
             return last.ToString();
         }
 
@@ -167,107 +168,130 @@ Once both of your programs have terminated (regardless of what caused them to do
         public static List<Message> messages { get; set; }
         public static List<string> instructions { get; set; }
 
-        public async Task<int> Output2Async()
+        public override string Output2(string input)
         {
-            Input = @"snd 1
+            /*
+            input = @"snd 1
 snd 2
 snd p
 rcv a
 rcv b
 rcv c
-rcv d
-";
-            var rows = Input.Split("\r\n");
+rcv d";
+            */
+            var rows = input.Split("\n");
             instructions = new List<string>(rows.Length);
             instructions.AddRange(rows);
 
+            messages = new List<Message>();
+
             var p0 = new Program(0);
             var p1 = new Program(1);
+            var monitor = new Monitor(new List<Program>() { p0, p1 });
 
-            await p0.Process(instructions);
-            await p1.Process(instructions);
+            Task[] tasks = { p0.Process(), p1.Process(), monitor.Watch() };
+            Task.WaitAll(tasks);
 
-            while (p0.waiting && p1.waiting)
-            {
-                await Task.Delay(2000);
-            }
-
-            return p0.messageSent;
+            return p1.messageSent.ToString(); // 4307 too low
         }
 
         public class Program
         {
-            private int _id { get; set; }
+            public int Id { get; set; }
             public Dictionary<string, long> registers { get; set; }
             public int messageSent { get; set; }
             public bool waiting { get; set; } = false;
-            
+
             public Program(int id)
             {
-                registers = new Dictionary<string, long>();                
-                registers["p"] = _id = id;
+                registers = new Dictionary<string, long>();
+                registers["p"] = Id = id;
             }
-            public async Task Process(List<string> instructions)
+            public async Task Process()
             {
-                int position = 0;                
+                int position = 0;
                 Regex number = new Regex(@"^(-*)[0-9]+$");
                 while (position <= instructions.Capacity)
                 {
-                    var cmd = instructions[position].Split(" ");
-
-                    if (!registers.ContainsKey(cmd[1]))
-                        registers.Add(cmd[1], 0);
-
-                    long value = 0;
-                    if (cmd.Length == 3)
-                        if (number.IsMatch(cmd[2]))
-                            value = int.Parse(cmd[2]);
-                        else
-                            value = registers[cmd[2]];
-
-
-                    switch (cmd[0])
+                    try
                     {
-                        case "snd":                            
-                            Message.Send(new Message() { senderId = _id, value = number.IsMatch(cmd[1]) ? long.Parse(cmd[1]) : registers[cmd[1]] });
-                            Console.WriteLine($"Message sent: {_id} - {cmd[1]}");
-                            messageSent++;
-                            break;
-                        case "set":
-                            registers[cmd[1]] = value;
-                            break;
-                        case "add":
-                            registers[cmd[1]] += value;
-                            break;
-                        case "mul":
-                            registers[cmd[1]] *= value;
-                            break;
-                        case "mod":
-                            registers[cmd[1]] %= value;
-                            break;
-                        case "rcv":    
-                            while(true) {                                
-                                var msg = Message.Receive(_id);
-                                if (msg != null)
+                        var cmd = instructions[position].Split(" ");
+
+                        if (!new string[] { "snd", "rcv" }.Contains(cmd[0]) && !registers.ContainsKey(cmd[1]))
+                            registers.Add(cmd[1], 0);
+
+                        long value = 0;
+                        if (cmd.Length == 3)
+                            if (number.IsMatch(cmd[2]))
+                                value = int.Parse(cmd[2]);
+                            else
+                                value = registers[cmd[2]];
+
+                        switch (cmd[0])
+                        {
+                            case "snd":
+                                Message.Send(new Message() { senderId = Id, type = Message.types.setter, value = number.IsMatch(cmd[1]) ? long.Parse(cmd[1]) : registers[cmd[1]] });
+                                Console.WriteLine($"Message sent: {Id} - {cmd[1]}");
+                                await Task.Delay(50);
+                                messageSent++;
+                                break;
+                            case "set":
+                                registers[cmd[1]] = value;
+                                break;
+                            case "add":
+                                registers[cmd[1]] += value;
+                                break;
+                            case "mul":
+                                registers[cmd[1]] *= value;
+                                break;
+                            case "mod":
+                                registers[cmd[1]] %= value;
+                                break;
+                            case "rcv":
+                                while (true)
                                 {
-                                    registers[cmd[1]] = msg.value;
-                                    Console.WriteLine($"Message received: {_id} - {msg.value}");
-                                    waiting = false;
-                                    break;
-                                } else
-                                {
-                                    waiting = true;
-                                    await Task.Delay(2000);
-                                }                                    
-                            }
-                            break;
-                        case "jgz":
-                            if (registers[cmd[1]] > 0)
-                                position += (int)value - 1;
-                            break;
+                                    var msg = Message.Receive(Id);
+                                    if (msg != null)
+                                    {
+                                        if (msg.type == Message.types.exit)
+                                        {
+                                            position = instructions.Capacity;
+                                            Console.WriteLine($"Message received: exit");
+                                        }
+                                        else
+                                        {
+                                            registers[cmd[1]] = msg.value;
+                                            Console.WriteLine($"Message received: {Id} - {msg.value}");
+                                        }
+                                        waiting = false;
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        waiting = true;
+                                        await Task.Delay(50);
+                                    }
+                                }
+                                break;
+                            case "jgz":
+                                if (registers[cmd[1]] > 0)
+                                    position += (int)value - 1;
+                                break;
+                        }
+
+                        position++;
+
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error p{Id}: {ex.Message}");
+                        position = int.MaxValue;
+                        waiting = true;
                     }
 
-                    position++;
+
+
+
                 }
             }
         }
@@ -275,22 +299,60 @@ rcv d
         public class Message
         {
             public int senderId { get; set; }
+            public types type { get; set; }
             public long value { get; set; }
 
             public static void Send(Message message)
             {
-                _18.messages.Add(message);
+                lock (messages)
+                    _18.messages.Add(message);
             }
 
             public static Message Receive(int receiverId)
             {
-                var message = _18.messages.FirstOrDefault(_ => _.senderId != receiverId);
-                if (message != null)
+                lock (messages)
                 {
-                    messages.Remove(message);
-                    return message;
-                }                
-                return null;
+                    var message = _18.messages.FirstOrDefault(_ => (_.type == Message.types.exit && _.senderId == receiverId) || _.senderId != receiverId);
+                    if (message != null)
+                    {
+                        messages.Remove(message);
+                        return message;
+                    }
+                    return null;
+                }
+            }
+
+            public enum types
+            {
+                setter,
+                exit
+            }
+        }
+
+        public class Monitor
+        {
+            List<Program> _programs { get; set; }
+
+            public Monitor(List<Program> programs)
+            {
+                _programs = programs;
+            }
+
+            public async Task Watch()
+            {
+                while (true)
+                {
+                    await Task.Delay(500);
+                    if (_programs.All(_ => _.waiting))
+                    {
+                        _programs.ForEach(p =>
+                        {
+                            Message.Send(new Message() { senderId = p.Id, type = Message.types.exit });
+                            Console.WriteLine($"Monitor sent exit for p{p.Id}");
+                        });
+                        break;
+                    }
+                }
             }
         }
     }
