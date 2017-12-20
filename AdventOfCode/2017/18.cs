@@ -30,7 +30,9 @@ mul X Y sets register X to the result of multiplying the value contained in regi
 mod X Y sets register X to the remainder of dividing the value contained in register X by the value of Y (that is, it sets X to the result of X modulo Y).
 rcv X recovers the frequency of the last sound played, but only when the value of X is not zero. (If it is zero, the command does nothing.)
 jgz X Y jumps with an offset of the value of Y, but only if the value of X is greater than zero. (An offset of 2 skips the next instruction, an offset of -1 jumps to the previous instruction, and so on.)
-Many of the instructions can take either a register (a single letter) or a number. The value of a register is the integer it contains; the value of a number is that number.
+Many of the instructions can take either a register (a single letter) or a number. 
+The value of a register is the integer it contains; 
+the value of a number is that number.
 
 After each jump instruction, the program continues with the instruction to which the jump jumped. After any other instruction, the program continues with the next instruction. 
 Continuing (or jumping) off either end of the program terminates it.
@@ -180,7 +182,7 @@ rcv d";
             */
             var rows = input.Split("\n");
             instructions = new List<string>(rows.Length);
-            instructions.AddRange(rows);            
+            instructions.AddRange(rows);
 
             messages = new List<Message>();
 
@@ -191,7 +193,7 @@ rcv d";
             Task[] tasks = { p0.Process(), p1.Process(), monitor.Watch() };
             Task.WaitAll(tasks);
 
-            return p1.messageSent.ToString(); // 4307 too low
+            return p1.messageSent.ToString();
         }
 
         public class Program
@@ -218,7 +220,7 @@ rcv d";
                         var cmd = instructions[position].Split(" ");
 
                         if (!registers.ContainsKey(cmd[1]))
-                            registers.Add(cmd[1], 0);
+                            registers.Add(cmd[1], number.IsMatch(cmd[1]) ? int.Parse(cmd[1]) : 0);
 
                         long value = 0;
                         if (cmd.Length == 3)
@@ -230,9 +232,9 @@ rcv d";
                         switch (cmd[0])
                         {
                             case "snd":
-                                var _v = number.IsMatch(cmd[1]) ? long.Parse(cmd[1]) : registers[cmd[1]];
-                                Message.Send(new Message() { senderId = Id, type = Message.types.setter, value = _v });
-                                Console.WriteLine($"Message sent: {Id} - {cmd[1]} value is {_v}; position: {position}");
+                                //var _v = number.IsMatch(cmd[1]) ? long.Parse(cmd[1]) : registers[cmd[1]];
+                                Message.Send(new Message() { senderId = Id, type = Message.types.setter, value = registers[cmd[1]] });
+                                Console.WriteLine($"Message sent: {Id} - {cmd[1]} value is {registers[cmd[1]]}; position: {position}");
                                 await Task.Delay(10);
                                 messageSent++;
                                 break;
@@ -343,7 +345,7 @@ rcv d";
             {
                 await Task.Delay(500);
                 while (true)
-                {                    
+                {
                     if (_programs.All(_ => _.waiting))
                     {
                         _programs.ForEach(p =>
