@@ -167,7 +167,6 @@ Once both of your programs have terminated (regardless of what caused them to do
 
         public static List<Message> messages { get; set; }
         public static List<string> instructions { get; set; }
-
         public override string Output2(string input)
         {
             /*
@@ -181,7 +180,7 @@ rcv d";
             */
             var rows = input.Split("\n");
             instructions = new List<string>(rows.Length);
-            instructions.AddRange(rows);
+            instructions.AddRange(rows);            
 
             messages = new List<Message>();
 
@@ -205,7 +204,8 @@ rcv d";
             public Program(int id)
             {
                 registers = new Dictionary<string, long>();
-                registers["p"] = Id = id;
+                Id = id;
+                registers["p"] = Id;
             }
             public async Task Process()
             {
@@ -217,7 +217,7 @@ rcv d";
                     {
                         var cmd = instructions[position].Split(" ");
 
-                        if (!new string[] { "snd", "rcv" }.Contains(cmd[0]) && !registers.ContainsKey(cmd[1]))
+                        if (!registers.ContainsKey(cmd[1]))
                             registers.Add(cmd[1], 0);
 
                         long value = 0;
@@ -230,9 +230,10 @@ rcv d";
                         switch (cmd[0])
                         {
                             case "snd":
-                                Message.Send(new Message() { senderId = Id, type = Message.types.setter, value = number.IsMatch(cmd[1]) ? long.Parse(cmd[1]) : registers[cmd[1]] });
-                                Console.WriteLine($"Message sent: {Id} - {cmd[1]}");
-                                await Task.Delay(50);
+                                var _v = number.IsMatch(cmd[1]) ? long.Parse(cmd[1]) : registers[cmd[1]];
+                                Message.Send(new Message() { senderId = Id, type = Message.types.setter, value = _v });
+                                Console.WriteLine($"Message sent: {Id} - {cmd[1]} value is {_v}; position: {position}");
+                                await Task.Delay(10);
                                 messageSent++;
                                 break;
                             case "set":
@@ -261,7 +262,7 @@ rcv d";
                                         else
                                         {
                                             registers[cmd[1]] = msg.value;
-                                            Console.WriteLine($"Message received: {Id} - {msg.value}");
+                                            Console.WriteLine($"Message received: {Id} - set {cmd[1]} to {msg.value}; position: {position}");
                                         }
                                         waiting = false;
                                         break;
@@ -269,7 +270,7 @@ rcv d";
                                     else
                                     {
                                         waiting = true;
-                                        await Task.Delay(50);
+                                        //await Task.Delay(10);
                                     }
                                 }
                                 break;
@@ -340,9 +341,9 @@ rcv d";
 
             public async Task Watch()
             {
+                await Task.Delay(500);
                 while (true)
-                {
-                    await Task.Delay(500);
+                {                    
                     if (_programs.All(_ => _.waiting))
                     {
                         _programs.ForEach(p =>
@@ -352,6 +353,7 @@ rcv d";
                         });
                         break;
                     }
+                    await Task.Delay(250);
                 }
             }
         }
