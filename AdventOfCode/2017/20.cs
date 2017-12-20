@@ -92,13 +92,9 @@ How many particles are left after all collisions are resolved?
             foreach (var p in particels)
                 p.MinDistance = p.Distance();
 
-            var i = 0;
-            var checkCollapsing = true;
-            var checkSingleDistance = false;
             while (true)
             {
-                i++;
-                var list = particels.Where(_ => !_.Destroyed && !_.Hide);
+                var list = particels.Where(_ => !_.Destroyed);
 
                 if (!list.Any()) break;
 
@@ -106,31 +102,19 @@ How many particles are left after all collisions are resolved?
                 foreach (var p in list)
                 {
                     p.Velocity.X += p.Acceleration.X;
+                    p.Velocity.Y += p.Acceleration.Y;
                     p.Velocity.Z += p.Acceleration.Z;
                     p.Location.X += p.Velocity.X;
                     p.Location.Y += p.Velocity.Y;
                     p.Location.Z += p.Velocity.Z;
 
-                    if (checkCollapsing)
+                    var distance = p.Distance();
+                    if (distance < p.MinDistance)
                     {
-                        var distance = p.Distance();
-                        if (distance < p.MinDistance)
-                        {
-                            p.MinDistance = distance;
-                            someAreCollapsing = true;
-                        }
+                        p.MinDistance = distance;
+                        someAreCollapsing = true;
                     }
-                    if (checkSingleDistance)
-                    {
-                        if (list.Where(_ => _.Id != p.Id).Any(_ => p.Distance(_) < p.MinDistance))
-                        {
-                            p.MinDistance = p.Distance(list.Where(_ => _.Id != p.Id).OrderBy(_ => p.Distance(_)).FirstOrDefault());
-                        }
-                        else
-                        {
-                            p.Hide = true;
-                        }
-                    }
+
                 }
 
                 var samePositionGroup = particels.GroupBy(p => p.Location.X.ToString() + p.Location.Y.ToString() + p.Location.Z.ToString()).Where(g => g.Count() > 1);
@@ -141,16 +125,10 @@ How many particles are left after all collisions are resolved?
                             p.Destroyed = true;
                 }
 
-                if (!someAreCollapsing)
-                {
-                    checkCollapsing = false;
-                    checkSingleDistance = true;
-                    foreach (var p in list)
-                        p.MinDistance = int.MaxValue;
-                }
+                if (!someAreCollapsing) break;
             }
 
-            return particels.Where(_ => !_.Destroyed).Count().ToString(); //887 too high
+            return particels.Where(_ => !_.Destroyed).Count().ToString();
         }
 
         public class Particel
@@ -162,8 +140,6 @@ How many particles are left after all collisions are resolved?
             public bool Destroyed { get; set; } = false;
             public long MinDistance { get; set; }
             public long Distance() => Math.Abs(Location.X) + Math.Abs(Location.Y) + Math.Abs(Location.Z);
-            public long Distance(Particel particel) => Math.Abs(Location.X - particel.Location.X) + Math.Abs(Location.Y - particel.Location.Y) + Math.Abs(Location.Z - particel.Location.Z);
-            public bool Hide { get; set; }
         }
 
         public List<Particel> GetParticels(string input)
