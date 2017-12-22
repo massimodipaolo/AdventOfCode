@@ -92,100 +92,7 @@ How many pixels stay on after 5 iterations?
              */
         public override string Output(string input)
         {
-            /*
-            input = @"../.# => ##./#../...
-.#./..#/### => #..#/..../..../#..#";
-            */
-            IEnumerable<Rule> rules = input.Split("\n").Select(row => { var separator = row.Split(" => "); return new Rule() { inbound = separator[0], outboud = separator[1] }; });
-
-            var f = new Fractal();
-            f.points = new List<Point>();
-            f.points.AddRange(".#./..#/###".ToPoints());
-
-            for (var i=0;i<5;i++)
-            {
-                f.Divide();
-                foreach (var sq in f.squares)
-                {
-                    var r = rules.FirstOrDefault(_ => _.inbound == sq.ToString());
-                    if (r == null)
-                        r = rules.FirstOrDefault(_ => _.inbound == sq.Rotate().ToString());
-                    if (r == null)
-                        r = rules.FirstOrDefault(_ => _.inbound == sq.Rotate().Rotate().ToString());
-                    if (r == null)
-                        r = rules.FirstOrDefault(_ => _.inbound == sq.Rotate().Rotate().Rotate().ToString());
-                    if (r == null)
-                        r = rules.FirstOrDefault(_ => _.inbound == sq.Rotate().Flip().ToString());
-                    if (r == null)
-                        r = rules.FirstOrDefault(_ => _.inbound == sq.Rotate().Rotate().Flip().ToString());                    
-                    if (r == null)
-                        r = rules.FirstOrDefault(_ => _.inbound == sq.Rotate().Rotate().Rotate().Flip().ToString());                    
-                    if (r != null)
-                    {
-                        sq.points = r.outboud.ToPoints();
-                    } else
-                    {
-                        throw new Exception();
-                    }
-                }
-                f.Compose();
-            }
-
-            return f.ToString().Where(_ => _ == '#').Count().ToString();
-        }
-
-        public class Fractal
-        {
-            public List<Point> points { get; set; }
-            public List<Fractal> squares { get; set; }
-            public int size => (int)Math.Sqrt(points.Count);
-
-            public void Divide()
-            {
-                int n = size % 2 == 0 ? 2 : 3;
-                var _squares = new List<Fractal>();
-                var sqs = points.GroupBy(_ => $"{_.x / n}-{_.y / n}" );                
-                for (var j = 0; j < sqs.Count(); j++)
-                {
-                    var f = new Fractal();
-                    f.points = new List<Point>();
-                    f.points.AddRange(sqs.Skip(j).First());
-                    _squares.Add(f);
-                }
-                squares = _squares;
-            }
-
-            public void Compose()
-            {
-                points = new List<Point>();                 
-                int size = (int)Math.Sqrt(squares.Count());
-                int capacity = squares[0].size;                
-
-                for (var i=0;i <= size-1;i++)
-                    for (var j = 0; j <= size-1; j++)
-                    {
-                        points.AddRange(squares[i + j].points.Select(_ => new Point() { x = _.x + (i * capacity), y = _.y + (j * capacity), v = _.v }).ToList());
-                    }
-                        
-            }
-
-            public override string ToString()
-            {
-                var s = string.Join("", points.OrderBy(_ => _.y).ThenBy(_ => _.x).Select((p, i) => (i + 1) % size == 0 && (i + 1) < size * size ? $"{p.v}/" : $"{p.v}"));
-                return s;
-            }
-        }
-        public class Point
-        {
-            public int x { get; set; }
-            public int y { get; set; }
-            public char v { get; set; }
-        }
-
-        public class Rule
-        {
-            public string inbound { get; set; }
-            public string outboud { get; set; }
+            return Solve(input, 5);
         }
 
         /*
@@ -193,6 +100,11 @@ How many pixels stay on after 5 iterations?
 How many pixels stay on after 18 iterations?         
              */
         public override string Output2(string input)
+        {   
+            return Solve(input, 18);
+        }
+
+        public string Solve(string input,int iterations)
         {
             List<Rule> rules = input.Split("\n").Select(row => { var separator = row.Split(" => "); return new Rule() { inbound = separator[0], outboud = separator[1] }; }).ToList();
             var rulesExt = new List<Rule>();
@@ -213,8 +125,8 @@ How many pixels stay on after 18 iterations?
             f.points = new List<Point>();
             f.points.AddRange(".#./..#/###".ToPoints());
 
-            for (var i = 0; i < 18; i++)
-            {                
+            for (var i = 0; i < iterations; i++)
+            {
                 f.Divide();
                 foreach (var sq in f.squares)
                 {
@@ -229,10 +141,67 @@ How many pixels stay on after 18 iterations?
                     }
                 }
                 f.Compose();
-                Console.WriteLine($"{i}) sq: {f.squares.Count()} p: {f.points.Count} {f.ToString().Where(_ => _ == '#').Count()}"); 
+                Console.WriteLine($"{i}) sq: {f.squares.Count()} p: {f.points.Count} {f.ToString().Where(_ => _ == '#').Count()}");
             }
 
             return f.ToString().Where(_ => _ == '#').Count().ToString();
+        }
+
+        public class Fractal
+        {
+            public List<Point> points { get; set; }
+            public List<Fractal> squares { get; set; }
+            public int size => (int)Math.Sqrt(points.Count);
+
+            public void Divide()
+            {
+                int n = size % 2 == 0 ? 2 : 3;
+                var _squares = new List<Fractal>();
+                var sqs = points.GroupBy(_ => $"{(_.x / n).ToString().PadLeft(10,'0')}-{(_.y / n).ToString().PadLeft(10, '0')}").OrderBy(_ => _.Key).ToList();
+                for (var j = 0; j < sqs.Count(); j++)
+                {
+                    var f = new Fractal();
+                    f.points = new List<Point>();
+                    f.points.AddRange(sqs.Skip(j).First());
+                    _squares.Add(f);
+                }
+                squares = _squares;
+            }
+
+            public void Compose()
+            {
+                points = new List<Point>();
+                int size = (int)Math.Sqrt(squares.Count());
+                int capacity = squares[0].size;
+
+                var k = 0;
+                for (var i = 0; i < size; i++)
+                    for (var j = 0; j < size; j++)
+                    {                        
+                        points.AddRange(squares.Skip(k++).First().points.Select(_ => new Point() { x = _.x + (i * capacity), y = _.y + (j * capacity), v = _.v }).ToList());
+                    }
+
+
+                
+            }
+
+            public override string ToString()
+            {
+                var s = string.Join("", points.OrderBy(_ => _.y).ThenBy(_ => _.x).Select((p, i) => (i + 1) % size == 0 && (i + 1) < size * size ? $"{(p.v ? '#' : '.')}/" : $"{(p.v ? '#' : '.')}"));
+                return s;
+            }
+        }
+        public class Point
+        {
+            public int x { get; set; }
+            public int y { get; set; }
+            public bool v { get; set; }
+        }
+
+        public class Rule
+        {
+            public string inbound { get; set; }
+            public string outboud { get; set; }
         }
     }
 
@@ -244,7 +213,7 @@ How many pixels stay on after 18 iterations?
             var rows = s.Split('/');
             for (var y = 0; y < rows.Length; y++)
                 for (var x = 0; x < rows[y].Length; x++)
-                    points.Add(new _21.Point() { x = x, y = y, v = rows[y][x] });
+                    points.Add(new _21.Point() { x = x, y = y, v = rows[y][x] == '#' });
 
             return points;
         }
