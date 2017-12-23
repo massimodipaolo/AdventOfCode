@@ -266,31 +266,33 @@ Given your actual map, after 10000000 bursts of activity, how many bursts cause 
          */
         public override string Output2(string input)
         {
-
-            input = @"..#
-#..
-...";
-                        
-            var points = new List<Point>();            
-            var rows = input.Split("\r\n");
+            var points = new Dictionary<string, char>();
+            var rows = input.Split("\n");
             var bound = (int)Math.Floor((double)rows.Length / 2);
             for (var _y = -bound; _y <= bound; _y++)
                 for (var _x = -bound; _x <= bound; _x++)
-                    points.Add(new Point() { x = _x, y = _y, v = rows[_y + bound][_x + bound] == '#' ? 'I' : 'C' });
+                    points.Add($"{_x},{_y}", rows[_y + bound][_x + bound] == '#' ? 'I' : 'C');
 
             var x = 0; var y = 0; var vector = "T";
+            var _xP = 0; var _yP = 0;
+            char v = default(char);
             var bursts = 0;
-            //while (bursts <= 100 /*10000000*/)
-            for (var i = 0;i < 10000000; i++/*10000000*/)
-                {
-                var p = points.SingleOrDefault(_ => _.x == x && _.y == y);
-                if (p == null)
-                {
-                    p = new Point() { x = x, y = y, v = 'C' };
-                    points.Add(p);
-                }                
+            var iterations = 10000000;
+            for (var i = 0; i < iterations; i++)
+            {
+                _xP = x; _yP = y;
 
-                if (p.v == 'I') // right
+                if (points.ContainsKey($"{x},{y}"))
+                {
+                    v = points[$"{x},{y}"];
+                }
+                else
+                {
+                    v = 'C';
+                    points.Add($"{x},{y}", v);
+                }
+
+                if (v == 'I') // right
                     switch (vector)
                     {
                         case "T":
@@ -310,7 +312,7 @@ Given your actual map, after 10000000 bursts of activity, how many bursts cause 
                             y--;
                             break;
                     }
-                else if (p.v == 'C') // left
+                else if (v == 'C') // left
                     switch (vector)
                     {
                         case "T":
@@ -330,7 +332,7 @@ Given your actual map, after 10000000 bursts of activity, how many bursts cause 
                             y--;
                             break;
                     }
-                else if (p.v == 'W') // no turn
+                else if (v == 'W') // no turn
                     switch (vector)
                     {
                         case "T":
@@ -346,7 +348,7 @@ Given your actual map, after 10000000 bursts of activity, how many bursts cause 
                             x++;
                             break;
                     }
-                else if (p.v == 'F') // reverse
+                else if (v == 'F') // reverse
                     switch (vector)
                     {
                         case "T":
@@ -366,29 +368,30 @@ Given your actual map, after 10000000 bursts of activity, how many bursts cause 
                             x--;
                             break;
                     }
+
 
                 //change state
-                switch (p.v)
+                switch (v)
                 {
                     case 'C':
-                        p.v = 'W';
+                        points[$"{_xP},{_yP}"] = 'W';
                         break;
                     case 'W':
-                        p.v = 'I';
+                        points[$"{_xP},{_yP}"] = 'I';
+                        bursts++;
                         break;
                     case 'I':
-                        p.v = 'F';
+                        points[$"{_xP},{_yP}"] = 'F';
+                        //bursts++;
                         break;
                     case 'F':
-                        p.v = 'C';
+                        points[$"{_xP},{_yP}"] = 'C';
                         break;
 
                 }
-                if (p.v == 'I') bursts++;
 
             }
-
-            //return points.Count(_ => _.v == 'I').ToString();
+            //Console.WriteLine(points.Count(_ => _.Value == 'I'));
             return bursts.ToString();
         }
 

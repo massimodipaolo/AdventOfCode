@@ -55,7 +55,9 @@ namespace AdventOfCode
             //Console.WriteLine(new _2017._21().Output());
             //Console.WriteLine(new _2017._21().Output2());
             //Console.WriteLine(new _2017._22().Output());
-            Console.WriteLine(new _2017._22().Output2());
+            //Console.WriteLine(new _2017._22().Output2());
+            //Console.WriteLine(new _2017._22().Output());
+            //Console.WriteLine(new _2017._22().Output2());
             Console.ReadLine();
         }
     }
