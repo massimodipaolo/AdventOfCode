@@ -1,0 +1,32 @@
+﻿        set b 84
+        set c b
+        jnz a 2
+        jnz 1 5
+        mul b 100
+        sub b -100000
+        set c b                         b = 108400
+        sub c -17000                    c = 125400
+        |------set f 1                  f = 1
+        |      set d 2                  d = 2
+        |      |----set e 2                 e = 2
+        |      |    |--set g d                  
+        |      |    |  mul g e
+        |      |    |  sub g b
+        |      |    |  jnz g 2 ---|             d * e == b ? f = 0 // b is not prime
+        |      |    |  set f 0    |
+        |      |    |  sub e -1 --|             e++
+        |      |    |  set g e                  
+        |      |    |  sub g b
+        |      |    |--jnz g -8                 e < b ? loop1
+        |      |    sub d -1                d++
+        |      |    set g d                 
+        |      |    sub g b
+        |      |----jnz g -13               d < b ? loop2
+        |      jnz f 2 ---|             f == 0 ? h++
+        |      sub h -1   |
+        |      set g b ---|              
+        |      sub g c
+        |      jnz g 2 ---|             b == c ? exit
+        |      jnz 1 3 ***|**
+        |      sub b -17 -| *           b += 17
+        |------jnz 1 -23    *           loop3
